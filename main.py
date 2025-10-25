@@ -197,7 +197,6 @@ async def upload(bot: Client, m: Message):
                     prog = await m.reply_text(Show)
                     prog_msg = await m.reply_text("📥 Downloading started...")
 await download_video_with_progress(url, f"{name}.mp4", prog_msg, bot)
-)
                     filename = res_file
                     await prog.delete(True)
                     await bot.send_video(chat_id=m.chat.id, video=open(filename, "rb"), caption=cc)
