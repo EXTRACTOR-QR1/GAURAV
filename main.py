@@ -212,5 +212,25 @@ async def upload(bot: Client, m: Message):
         await m.reply_text(e)
     await m.reply_text("**𝔻ᴏɴᴇ 𝔹ᴏ𝕤𝕤😎**")
 
+import threading
+from flask import Flask
+import os
 
-bot.run()
+# Dummy Flask server for Render port binding
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "✅ Bot is running on Render Web Service!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
+def run_bot():
+    bot.run()
+
+if __name__ == "__main__":
+    threading.Thread(target=run_flask).start()
+    run_bot()
+    
