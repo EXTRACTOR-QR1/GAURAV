@@ -195,7 +195,9 @@ async def upload(bot: Client, m: Message):
                 else:
                     Show = f"**⥥ 🄳🄾🅆🄽🄻🄾🄰🄳🄸🄽🄶⬇️⬇️... »**\n\n**📝Name »** `{name}\n❄Quality » {raw_text2}`\n\n**🔗URL »** `{url}`"
                     prog = await m.reply_text(Show)
-                    res_file = await helper.download_video(url, cmd, name)
+                    prog_msg = await m.reply_text("📥 Downloading started...")
+await download_video_with_progress(url, f"{name}.mp4", prog_msg, bot)
+)
                     filename = res_file
                     await prog.delete(True)
                     await bot.send_video(chat_id=m.chat.id, video=open(filename, "rb"), caption=cc)
