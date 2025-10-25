@@ -171,7 +171,21 @@ async def upload(bot: Client, m: Message):
                 if "drive" in url:
                     try:
                         ka = await helper.download(url, name)
-                        copy = await bot.send_document(chat_id=m.chat.id,document=ka, caption=cc1)
+                        import os
+import subprocess
+if str(ka).endswith(".mkv"):
+    mp4_path = ka.replace(".mkv", ".mp4")
+    try:
+        subprocess.run(
+            ["ffmpeg", "-i", ka, "-c:v", "copy", "-c:a", "aac", "-strict", "experimental", mp4_path],
+            check=True
+        )
+        copy = await bot.send_video(chat_id=m.chat.id, video=open(mp4_path, "rb"), caption=cc1)
+    except Exception as e:
+        await bot.send_message(m.chat.id, f"वीडियो कन्वर्ट करने में समस्या आई ⚠️: {e}")
+else:
+    copy = await bot.send_video(chat_id=m.chat.id, video=open(ka, "rb"), caption=cc1)
+
                         count+=1
                         os.remove(ka)
                         time.sleep(1)
@@ -185,7 +199,22 @@ async def upload(bot: Client, m: Message):
                         cmd = f'yt-dlp -o "{name}.pdf" "{url}"'
                         download_cmd = f"{cmd} -R 25 --fragment-retries 25"
                         os.system(download_cmd)
-                        copy = await bot.send_document(chat_id=m.chat.id, document=f'{name}.pdf', caption=cc1)
+                        import os
+import subprocess
+
+if str(ka).endswith(".mkv"):
+    mp4_path = ka.replace(".mkv", ".mp4")
+    try:
+        subprocess.run(
+            ["ffmpeg", "-i", ka, "-c:v", "copy", "-c:a", "aac", "-strict", "experimental", mp4_path],
+            check=True
+        )
+        copy = await bot.send_video(chat_id=m.chat.id, video=open(mp4_path, "rb"), caption=cc1)
+    except Exception as e:
+        await bot.send_message(m.chat.id, f"वीडियो कन्वर्ट करने में समस्या आई ⚠️: {e}")
+else:
+    copy = await bot.send_video(chat_id=m.chat.id, video=open(ka, "rb"), caption=cc1)
+
                         count += 1
                         os.remove(f'{name}.pdf')
                     except FloodWait as e:
