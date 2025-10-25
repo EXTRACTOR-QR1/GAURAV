@@ -2,6 +2,7 @@
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+import yt_dlp
 import os
 import re
 import sys
@@ -195,12 +196,11 @@ async def upload(bot: Client, m: Message):
                 else:
                     Show = f"**⥥ 🄳🄾🅆🄽🄻🄾🄰🄳🄸🄽🄶⬇️⬇️... »**\n\n**📝Name »** `{name}\n❄Quality » {raw_text2}`\n\n**🔗URL »** `{url}`"
                     prog = await m.reply_text(Show)
-                    res_file = await helper.download_video(url, cmd, name)
-                    filename = res_file
-                    await prog.delete(True)
-                    await bot.send_video(chat_id=m.chat.id, video=open(filename, "rb"), caption=cc)
-
-                    count += 1
+                    prog_msg = await m.reply_text("📥 Downloading started...")
+await download_video_with_progress(url, f"{name}.mp4", prog_msg, bot)
+await bot.send_video(chat_id=m.chat.id, video=open(f"{name}.mp4", "rb"), caption=cc)
+os.remove(f"{name}.mp4")
+                count += 1
                     time.sleep(1)
 
             except Exception as e:
@@ -234,4 +234,45 @@ def run_bot():
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
     run_bot()
+ def run_ytdlp_with_progress(url, filename, message, bot):
+    def progress_hook(d):
+        if d['status'] == 'downloading':
+            percent = d.get('_percent_str', '0%')
+            speed = d.get('_speed_str', '0 KiB/s')
+            eta = d.get('_eta_str', 'N/A')
+            text = (
+                f"📥 **Downloading...**\n\n"
+                f"Progress: {percent}\n⚡ Speed: {speed}\n⏳ ETA: {eta}"
+            )
+            try:
+                bot.loop.create_task(bot.edit_message_text(
+                    chat_id=message.chat.id,
+                    message_id=message.id,
+                    text=text
+                ))
+            except:
+                pass
+
+        elif d['status'] == 'finished':
+            bot.loop.create_task(bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=message.id,
+                text="✅ **Download complete!**"
+            ))
+
+    ydl_opts = {
+        'outtmpl': filename,
+        'progress_hooks': [progress_hook],
+        'format': 'bestvideo+bestaudio/best',
+        'noplaylist': True,
+        'quiet': True
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+
+async def download_video_with_progress(url, filename, message, bot):
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, run_ytdlp_with_progress, url, filename, message, bot)
     
